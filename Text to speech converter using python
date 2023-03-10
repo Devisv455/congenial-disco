@@ -1,0 +1,92 @@
+import pyttsx3
+voiceEngine = pyttsx3.init()
+rate = voiceEngine.getProperty('rate')
+volume = voiceEngine.getProperty('volume')
+voice = voiceEngine.getProperty('voice')
+#to test different voice rates
+def testRate():
+newVoiceRate = 50
+while newVoiceRate <= 300:
+
+voiceEngine.setProperty('rate', newVoiceRate)
+voiceEngine.say('Testing different voice rates.')
+voiceEngine.runAndWait()
+newVoiceRate= newVoiceRate+50
+print ("Current voice rate is",newVoiceRate)
+voiceEngine.setProperty('rate', 125)
+
+#to test different voice volumes
+def testVolume():
+newVolume = 0.1
+while newVolume <= 1:
+
+voiceEngine.setProperty('volume', newVolume)
+voiceEngine.say('Testing different voice volumes.')
+
+voiceEngine.runAndWait()
+newVolume = newVolume+0.3
+print ("Current voice volume is",newVolume)
+
+text =input("Enter the text you want to convert to speech \n")
+print(text)
+enter=str(input("If you wish to test different voice rates ,then type 'yes'\n"))
+x = str("yes")
+
+if enter == x:
+
+testRate()
+pace=int(input("Enter the pace at which you want to hear:"))
+rate = voiceEngine.getProperty('rate')
+voiceEngine.setProperty('rate',pace)
+voiceEngine.say(text)
+voiceEngine.runAndWait()
+y=str(input("If you wish to test different voice volumes ,then type 'yes'\n"))
+g = str("yes")
+if y == g:
+testVolume()
+sound=float(input("Enter the volume at which you want to hear :\n"))
+
+volume = voiceEngine.getProperty('volume')
+#setting volumn
+voiceEngine.setProperty('volume',sound)
+rate = voiceEngine.getProperty('rate')
+voiceEngine.setProperty('rate',pace)
+voiceEngine.say(text)
+voiceEngine.runAndWait()
+k=str(input("Do you wanna hear it in a female voice??\n"))
+h= str("yes")
+if k == h:
+voices = voiceEngine.getProperty('voices')
+voiceEngine.setProperty('voice', voices[1].id)
+#changing index, changes voices. 1 for female
+rate = voiceEngine.getProperty('rate')
+voiceEngine.setProperty('rate',pace)
+voiceEngine.say(text)
+voiceEngine.runAndWait()
+voiceEngine.save_to_file(text, "audio.mp3")
+voiceEngine.runAndWait()
+print("Audio file has been saved")
+else:
+speed=int(input("Enter the voice rate at which you want to hear:"))
+rate = voiceEngine.getProperty('rate')
+voiceEngine.setProperty('rate',speed)
+loud=float(input("Enter the volume at which you want to hear :"))
+
+volume = voiceEngine.getProperty('volume')
+voiceEngine.setProperty('volume',loud)
+voiceEngine.say(text)
+voiceEngine.runAndWait()
+p=str(input("Do you wanna hear it in a female voice??\n"))
+n= str("yes")
+if p == n:
+voices = voiceEngine.getProperty('voices')
+voiceEngine.setProperty('voice', voices[1].id)
+rate = voiceEngine.getProperty('rate')
+voiceEngine.setProperty('rate',speed)
+volume = voiceEngine.getProperty('volume')
+voiceEngine.setProperty('volume',loud)
+voiceEngine.say(text)
+voiceEngine.runAndWait()
+voiceEngine.save_to_file(text, "audio.mp3")
+voiceEngine.runAndWait()
+print("Audio file has been saved")
