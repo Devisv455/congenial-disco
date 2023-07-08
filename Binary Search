@@ -1,0 +1,45 @@
+n = int(input("enter range:"))
+
+list1=[]
+
+for i in range(0,n):
+
+    p = int(input("enter:"))
+
+    list1.append(p)
+
+list1.sort()
+list2 = list1.copy()
+print(list2)
+k = int(input("enter search element:"))
+
+def binary_search(list2,k):
+
+    low = 0
+    high = len(list2)-1
+    mid = 0
+
+    while low<=high:
+
+        mid = low+high//2
+
+        if list2[mid]==k:
+
+            return mid
+        elif list2[mid]>k:
+
+            high = mid-1
+        else :
+
+            low = mid+1
+
+    return -1
+
+res = binary_search(list2,k)
+
+if res == -1:
+
+    print("no")
+else :
+    print(res)
+ 
