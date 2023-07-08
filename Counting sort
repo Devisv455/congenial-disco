@@ -1,0 +1,53 @@
+def counting_sort(a):
+
+    n = len(a)
+    op = [0]*n
+
+    count = [0]*10
+
+    for i in range(0,n):
+
+        count[a[i]]+=1
+
+    for i in range(1,10):
+
+        count[i]+=count[i-1]
+
+    i = n-1
+
+    while i>=0:
+
+       op[count[a[i]]-1] = a[i]
+       count[a[i]]-=1
+       i-=1
+
+   
+    for i in range(0,n):
+
+        a[i] = op[i]
+
+
+#data = [4, 2, 2, 8, 3, 3, 1]
+#counting_sort(data)
+#print(data)
+
+p = int(input("enter size:"))
+array = []
+for i in range(0,p):
+
+    d = int(input("enter elements:"))
+    array.append(d)
+print(array)
+counting_sort(array)
+print(array)
+
+    
+
+
+
+
+
+
+    
+
+
