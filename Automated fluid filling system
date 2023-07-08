@@ -1,0 +1,7 @@
+An automated fluid filling system is inevitable in a manufacturing unit,as it is so
+beneficial for achieving accuracy ,efficiency etc. Designing of an automated fluid
+filling system to accurately fill the bottle or cans up to a predefined volume.The
+system should contain a mechanism which will provide warnings to ensure no
+under/overfilling has occurred. It should also contain a data tracking and reporting
+mechanism to forward each details of filling of every container to cloud.Also each
+container should be uniquely identified by using QR code reader.
