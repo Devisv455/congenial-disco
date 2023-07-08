@@ -1,7 +1,211 @@
-An automated fluid filling system is inevitable in a manufacturing unit,as it is so
-beneficial for achieving accuracy ,efficiency etc. Designing of an automated fluid
-filling system to accurately fill the bottle or cans up to a predefined volume.The
-system should contain a mechanism which will provide warnings to ensure no
-under/overfilling has occurred. It should also contain a data tracking and reporting
-mechanism to forward each details of filling of every container to cloud.Also each
-container should be uniquely identified by using QR code reader.
+Fluid_subcriber.py
+-------------------------------------------------------------------------------------------------------------------------------------
+import random
+
+from paho.mqtt import client as mqtt_client
+
+Broker_address = 'broker.emqx.io'
+port = 1883
+topic = "Can_INFO"
+# Generate a Client ID with the subscribe prefix.
+client_id = f'publish-{random.randint(0, 100)}'
+
+def connect_mqtt() -> mqtt_client:
+def on_connect(client, userdata, flags, rc):
+if rc == 0:
+print("Connected to MQTT Broker!")
+else:
+print("Failed to connect, return code %d\n", rc)
+
+client = mqtt_client.Client(client_id)
+client.on_connect = on_connect
+client.connect(Broker_address, port)
+return client
+
+def subscribe(client: mqtt_client):
+def on_message(client, userdata, msg):
+print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
+
+client.subscribe(topic)
+client.on_message = on_message
+
+def run():
+client = connect_mqtt()
+subscribe(client)
+client.loop_forever()
+
+if __name__ == '__main__':
+run()
+
+--------------------------------------------------------------------------------------------------------------------------------------
+---
+Fluid_published.py
+--------------------------------------------------------------------------------------------------------------------------------------
+---
+import time #Library for TIme
+import cv2 #Library for Image Processing
+import pandas as pd #To store into the CSV for Sending into Cloud
+import paho.mqtt.client as mqtt
+import random
+
+class FlowSensor:
+def __init__(self, min_volume, max_volume): #Constructor Initialization
+self.min_volume = min_volume #Minumum Flow of Liquid Agreeable
+self.max_volume = max_volume #Maximum Flow of Liwuid Agreeable
+
+def measure_flow(self,oldtime,volume): #To calculate the Volumetric flow rate with respect
+to the volume calculated from the weight recieved from the load sensor
+#print("Oldtime is:")
+#print(oldtime)
+
+time.sleep(0.2) #The processor speed of the laptop is quite high to notice a
+significant differnce so to make a change the process is kept in sleep for sometime
+#print("Time is:")
+#print(time.time())
+Flowrate=(((volume/(time.time()-oldtime)))*0.06) #Calculating the flow rate by dividing the
+volume by time difference, the resultant value is in Litre/Minute
+return Flowrate #Function control is given to the main program
+
+def is_underfilled(self, volume): #To check if the volume of the Can is in an underflow
+conidition
+return volume < self.min_volume #returns a booolean value
+
+def is_overfilled(self, volume): #To check if the volume of the Can is in an underflow
+conidition
+return volume > self.max_volume #returns a boolean value
+
+def get_volume(self,weight,density): #to calculate the volume of the filled fluid with the
+weight of the can and the density of the liquid
+Volume = float(weight/density)
+return Volume #returns volume
+
+def customize_flow(self, Flowrate, volume, oldtime, mode): #To customize the flow according to
+the state of the can(Underflow/Overflow)
+volume = volume*1000 #convert the volume to mL for ease of calculation
+time.sleep(0.2)
+if mode=="u":
+flow_custom=Flowrate + (((1000 - volume)/(time.time()-oldtime))*0.06) #In the case of an
+Underflow, we have to increase the flow and convert it into L per Minute before returning it to the
+main function
+elif mode=="o":
+flow_custom=Flowrate - (((1000 - volume)/(time.time()-oldtime))*0.06) #In the case of an
+Overflow, we have to decrease the flow and convert it into L per Minute before returning it to the
+main function
+return flow_custom #return the new flow
+
+def qr_reader(self,file): #Function to read the QR code to get information about the
+Can
+qr_img = cv2.imread(file) #File Location of the QR Code for explanation purposes
+qr_dec = cv2.QRCodeDetector() #To detect the QR code
+val, pts, st_code = qr_dec.detectAndDecode(qr_img) #values recieved from the QR code
+dict = eval(val) #convert the values to a dictionary for ease of storage
+return dict #Return the dictionary
+
+Broker_address = 'broker.emqx.io'
+port = 1883
+topic = "Can_INFO"
+client_id = f'publish-{random.randint(0, 1000)}'
+
+def on_publish(client, userdata, mid):
+print("sent a message")
+
+def connect_mqtt():
+def on_connect(client, userdata, flags, rc):
+if rc == 0:
+print("Connected to MQTT Broker!")
+else:
+print("Failed to connect, return code %d\n", rc)
+
+client = mqtt.Client(client_id)
+client.on_connect = on_connect
+client.connect(Broker_address, port)
+return client
+
+def publish(client,info):
+msg_count = 1
+
+while True:
+time.sleep(1)
+msg = str(info)
+result = client.publish(topic, msg)
+status = result[0]
+if status == 0:
+print(f"Send `{msg}` to topic `{topic}`")
+else:
+print(f"Failed to send message to topic {topic}")
+break
+
+def main():
+client = connect_mqtt()
+flow_sensor = FlowSensor(0.7, 1) #initializing the object of class flowsensor
+Oldtime=0 #Time when the last bottle was filled, this is used to calculate
+the Volumetric Flow Rate
+df1={"CAN_ID":[2012],
+"CAN_Volume":[1.0],
+"Volume filled":[1.0],
+} #Initial Dataframe
+df_final=pd.DataFrame(df1) #appended dataframe that contain all the data of each
+and every can
+
+while (True): #Infinite Loop
+value=flow_sensor.qr_reader("kunj.png") #The file location of the QR code
+print("Can ID:",value['CAN_ID']) #values in QR code
+print("Can Volume:",value['CAN_Volume'])
+Weight = float(input ("Enter your weight:") ) #Weight of the can
+Density = float(input ("Enter the density of liquid:")) #Density of the fluid
+Volume_filled= flow_sensor.get_volume(Weight,Density) #Calculatinf the volume of the can
+print("volume filled is",str(Volume_filled))
+if Oldtime==0: #Starting the machine / Initialization
+
+volume=1000
+Oldtime=time.time()
+time.sleep(0.2)
+#print("Time is:")
+#print(time.time())
+else:
+#print("updated oldtime is")
+#print(Oldtime)
+volume=Volume_filled*1000
+flow = flow_sensor.measure_flow(Oldtime,volume) #Calculating flow of the fluid
+Oldtime=time.time() #we store the duration of the last filled bottle to check for the next one
+print (" Flow is:",flow)
+if flow_sensor.is_underfilled(Volume_filled): #checking for underfilled state of the can
+print("The fluid is underfilled.")
+while (flow_sensor.is_underfilled(Volume_filled)):
+customized_flow = flow_sensor.customize_flow(flow,Volume_filled,Oldtime,"u")
+#customizing the flow
+Oldtime=time.time()
+time.sleep(0.2)
+diff=(time.time()-Oldtime)*0.0167
+Volume_filled = customized_flow * (diff)
+print("The customized flow rate is:", customized_flow)
+elif flow_sensor.is_overfilled(Volume_filled):
+print("The fluid is overfilled.")
+while (flow_sensor.is_overfilled(Volume_filled)):
+customized_flow = flow_sensor.customize_flow(flow,Volume_filled,Oldtime,"o")
+Oldtime=time.time()
+time.sleep(0.2)
+diff=(time.time()-Oldtime)*0.0167
+Volume_filled = customized_flow * (diff)
+print("The customized flow rate is:", customized_flow)
+
+else:
+print("The fluid level is good.")
+value={**value,"Volume filled":[Volume_filled]}
+df = pd.DataFrame(value)
+df_final = df_final.append(df,ignore_index=True)
+
+client.loop_start()
+publish(client,df_final)
+client.loop_stop()
+
+df_final.to_csv('file1.csv')
+print(df_final)
+
+cntrl=input("Terminate: y/n?\n") #Loop Control for termination of
+teh statement
+if cntrl=="y":
+break
+
+if __name__ == "__main__":
+main()
