@@ -1,0 +1,39 @@
+.container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .input {
+    margin-bottom: 10px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  .button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  /* Placeholder styles */
+  .input::placeholder {
+    color: #999;
+  }
+  
+  /* Styling for password input */
+  .password-input {
+    margin-top: 10px; /* Adjust spacing between username and password */
+  }
+  
